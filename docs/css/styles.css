@@ -1,0 +1,14 @@
+.panel-heading.has-error,
+.panel-body.has-error{
+    background-color: #8c271c;
+    color: #ffffff;
+}
+
+.has-error p {
+    font-weight: bold;
+}
+
+.container .panel.panel-primary{
+    max-width: 700px;
+    margin: 0 auto;
+}

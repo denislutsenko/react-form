@@ -6,6 +6,7 @@ class MessageForm extends React.Component {
 
     constructor(props) {
         super();
+        this._touched = {};
         this.state = {
             email: '',
             message: ''
@@ -16,32 +17,65 @@ class MessageForm extends React.Component {
 
 
     updateState(field) {
+        this._touched[field.name] = field.name;
         this.setState(() => {
             return {[field.name]: field.value};
         });
     }
 
-    _submit(event){
+    _submit(event) {
         event.preventDefault();
+        if (this._isEmailValid() && this._isMessageFilled()) {
+            this._sendRequest();
+        }
+    }
+
+    _isEmailValid() {
+        const emailReg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+        return emailReg.test(this.state.email);
+    }
+
+    _isMessageFilled() {
+        return this.state.message.trim().length > 0;
+    }
+
+    _sendRequest() {
         request
             .post(this.props.submitUrl)
             .send({
                 email: this.state.email,
                 body: this.state.message
             })
-            .end( (err, res) => {
-                if(err) {
+            .set('Content-Type', 'application/json')
+            .end((err, res) => {
+                if (err) {
                     console.log(err)
                 }
-                /// redirect or something like that
+                // redirect or something like that
             });
     }
 
     render() {
+        const errorClass = ' has-error';
+        let headerErrMess = '',
+            bodyErrMess = '',
+            bodyClass = 'panel-body',
+            headerClass = 'panel-heading';
+
+        if (this._touched['email'] && !this._isEmailValid()) {
+            headerErrMess = <strong>Email is not valid. Example: example@gmail.com</strong>;
+            headerClass += errorClass;
+        }
+
+        if (this._touched['message'] && !this._isMessageFilled()) {
+            bodyErrMess = <p>Message is empty!</p>;
+            bodyClass += errorClass;
+        }
+
         return (
             <div className="container">
-                <form className="panel panel-primary" onSubmit={this._submit}>
-                    <div className="panel-heading">
+                <form className='panel panel-primary' onSubmit={this._submit}>
+                    <div className={headerClass}>
                         <AlgoliaSearchBox
                             name="email"
                             appId="X4CZOFIPYI"
@@ -50,12 +84,19 @@ class MessageForm extends React.Component {
                             attrs={['name', 'email']}
                             id='user'
                             placeholder="Select recipient..."
-                            onBlur={this.updateState}
+                            onChange={this.updateState}
+                            value={this.state.email}
                         />
+                        {headerErrMess}
                     </div>
-                    <div className="panel-body">
-                        <MessageBox onBlur={this.updateState}/>
-                        <button type="submit" className="btn btn-primary">Submit</button>
+                    <div className={bodyClass}>
+                        <MessageBox onChange={this.updateState}/>
+                        {bodyErrMess}
+                        <button type="submit"
+                                className="btn btn-primary"
+                                disabled={!this._isMessageFilled() || !this._isEmailValid()}>
+                            Submit
+                        </button>
                     </div>
                 </form>
             </div>

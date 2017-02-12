@@ -1,0 +1,9 @@
+.panel-heading.has-error,
+.panel-body.has-error{
+    background-color: #8c271c;
+    color: #ffffff;
+}
+
+.has-error p {
+    font-weight: bold;
+}

@@ -1,43 +1,54 @@
-import {Select, AsyncCreatable} from 'react-select';
+import Select from 'react-select';
 import algoliasearch from 'algoliasearch';
 
 class AlgoliaSearchBox extends React.Component {
 
     constructor(props) {
         super(props);
-        this._angoliaIndex = algoliasearch(this.props.appId, this.props.angKey).initIndex(this.props.index);
         this.state = {
-            input: ''
+            options: [],
+            isLoading: false
         };
-        this._inputChange = this._inputChange.bind(this);
+        this._valueChange = this._valueChange.bind(this);
         this._getOptions = this._getOptions.bind(this);
-        this._onBlur = this._onBlur.bind(this);
     }
 
-    _inputChange(newInput) {
+    componentDidMount(){
+        this._angoliaIndex = algoliasearch(this.props.appId, this.props.angKey).initIndex(this.props.index);
+        this._getOptions('');
+    }
+
+    _valueChange(newInput) {
+        this.props.onChange( {
+            name: this.props.name,
+            value: newInput ? newInput.value : ''
+        } );
+    }
+
+    _getOptions(input){
         this.setState(() => {
-            return {input: newInput}
+            return {isLoading: true}
         });
-    }
-
-    _getOptions(input, callback) {
         const attrs = this.props.attrs;
         const queryParams = {
             attributesToRetrieve: attrs
         };
+        const setState = this.setState.bind(this);
         this._angoliaIndex.search(input, queryParams, (err, data) => {
-            if (err) {
-                callback(err, null)
+            if(err) {
+                console.log(err);
             } else {
-                callback(null, {
-                    options: data.hits.map((entity) => {
-                        return {
-                            value: entity[attrs[1]],
-                            label: entity[attrs[0]]
-                        }
-                    })
+                const opts = data.hits.map((entity) => {
+                    return {
+                        value: entity[attrs[1]],
+                        label: entity[attrs[0]]
+                    }
+                });
+                setState(() => {
+                    return {options: opts, isLoading: false};
                 });
             }
+
         });
     }
 
@@ -45,27 +56,18 @@ class AlgoliaSearchBox extends React.Component {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
 
-    /* This code can be replaced if we use ref with AsyncCreatable.
-    Otherwise blur event's target points to hidden element that has
-    no name and value */
-    _onBlur(event){
-        this.props.onBlur(event.target.parentNode.parentNode.parentNode.previousSibling);
-    }
-
     render() {
         return (
             <div className="form-group">
                 <label htmlFor={this.props.id}>{this._catitalize(this.props.id)}:</label>
-                <AsyncCreatable
-                    name={this.props.name}
-                    id={this.props.id}
-                    placeholder={this.props.placeholder}
+                <Select.Creatable
+                    {...this.props}
                     matchPos="start"
                     matchProp="label"
-                    value={this.state.input}
-                    loadOptions={this._getOptions}
-                    onChange={this._inputChange}
-                    onBlur={this._onBlur}
+                    options={this.state.options}
+                    onChange={this._valueChange}
+                    isLoading={this.state.isLoading}
+                    onInputChange={this._getOptions}
                 />
             </div>
         );

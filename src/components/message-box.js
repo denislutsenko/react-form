@@ -1,5 +1,14 @@
 class MessageBox extends React.Component {
 
+    constructor(props) {
+        super(props);
+        this._onChange = this._onChange.bind(this);
+    }
+
+    _onChange(event){
+        this.props.onChange(event.target);
+    }
+
     render() {
         return (
             <div className="form-group">
@@ -9,9 +18,7 @@ class MessageBox extends React.Component {
                     className="form-control"
                     id="message"
                     placeholder="Type your message here..."
-                    onBlur={(event) => {
-                        this.props.onBlur(event.target)
-                    }}
+                    onChange={this._onChange}
                 />
             </div>
         );
