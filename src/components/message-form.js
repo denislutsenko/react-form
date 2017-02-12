@@ -29,6 +29,7 @@ class MessageForm extends React.Component {
                 email: this.state.email,
                 body: this.state.message
             })
+            .set('Content-Type', 'application/json')
             .end( (err, res) => {
                 if(err) {
                     console.log(err)
