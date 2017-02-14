@@ -15,7 +15,7 @@ class AlgoliaSearchBox extends React.Component {
 
     componentDidMount(){
         this._angoliaIndex = algoliasearch(this.props.appId, this.props.angKey).initIndex(this.props.index);
-        this._getOptions('');
+        this._getOptions();
     }
 
     _valueChange(newInput) {
@@ -25,7 +25,7 @@ class AlgoliaSearchBox extends React.Component {
         } );
     }
 
-    _getOptions(input){
+    _getOptions(input = ''){
         this.setState(() => {
             return {isLoading: true}
         });
